@@ -2,6 +2,8 @@ package de.gsi.serializer.spi;
 
 import de.gsi.serializer.IoSerialiser;
 
+import de.gsi.dataset.serializer.IoSerialiser;
+
 public class ProtocolInfo extends WireDataFieldDescription {
     private final WireDataFieldDescription fieldHeader;
     private final String producerName;
