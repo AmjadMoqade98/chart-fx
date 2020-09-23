@@ -1,7 +1,14 @@
 package de.gsi.microservice.concepts;
 
-import org.zeromq.*;
+import java.nio.charset.StandardCharsets;
+
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
+import org.zeromq.ZFrame;
+import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
+import org.zeromq.ZMQException;
+import org.zeromq.ZMsg;
 
 /**
  * Quick Router-Dealer Round-trip demonstrator.
@@ -25,11 +32,11 @@ import org.zeromq.ZMQ.Socket;
 class RoundTripAndNotifyTests {
     // private static final String SUB_TOPIC = "x";
     private static final String SUB_TOPIC = "<domain>/<property>?<filter>#<ctx> - a very long topic to test the dependence of pub/sub pairs on topic lengths";
-    private static final byte[] SUB_DATA = "D".getBytes(ZMQ.CHARSET); // custom minimal data
-    private static final byte[] CLIENT_ID = "C".getBytes(ZMQ.CHARSET); // client name
-    private static final byte[] WORKER_ID = "W".getBytes(ZMQ.CHARSET); // worker-service name
-    private static final byte[] PUBLISH_ID = "P".getBytes(ZMQ.CHARSET); // publish-service name
-    private static final byte[] SUBSCRIBER_ID = "S".getBytes(ZMQ.CHARSET); // subscriber name
+    private static final byte[] SUB_DATA = "D".getBytes(StandardCharsets.UTF_8); // custom minimal data
+    private static final byte[] CLIENT_ID = "C".getBytes(StandardCharsets.UTF_8); // client name
+    private static final byte[] WORKER_ID = "W".getBytes(StandardCharsets.UTF_8); // worker-service name
+    private static final byte[] PUBLISH_ID = "P".getBytes(StandardCharsets.UTF_8); // publish-service name
+    private static final byte[] SUBSCRIBER_ID = "S".getBytes(StandardCharsets.UTF_8); // subscriber name
     private static int SAMPLE_SIZE = 10_000;
     private static int SAMPLE_SIZE_PUB = 100_000;
 
@@ -230,7 +237,7 @@ class RoundTripAndNotifyTests {
                     worker.connect("inproc://broker");
                     while (!Thread.currentThread().isInterrupted()) {
                         ZMsg msg = ZMsg.recvMsg(worker);
-                        if ("start".equals(msg.getFirst().getString(ZMQ.CHARSET))) {
+                        if ("start".equals(msg.getFirst().getString(StandardCharsets.UTF_8))) {
                             // System.err.println("dealer (indirect): start pushing");
                             for (int requests = 0; requests < SAMPLE_SIZE_PUB; requests++) {
                                 worker.send(SUB_TOPIC, ZMQ.SNDMORE);
@@ -292,7 +299,7 @@ class RoundTripAndNotifyTests {
                 worker.connect("tcp://localhost:5556");
                 while (!Thread.currentThread().isInterrupted()) {
                     ZMsg msg = ZMsg.recvMsg(worker);
-                    if ("start".equals(msg.getFirst().getString(ZMQ.CHARSET))) {
+                    if ("start".equals(msg.getFirst().getString(StandardCharsets.UTF_8))) {
                         // System.err.println("dealer (indirect): start pushing");
                         for (int requests = 0; requests < SAMPLE_SIZE_PUB; requests++) {
                             worker.send(SUB_TOPIC, ZMQ.SNDMORE);
@@ -316,7 +323,7 @@ class RoundTripAndNotifyTests {
                 worker.bind("tcp://localhost:5558");
                 while (!Thread.currentThread().isInterrupted()) {
                     ZMsg msg = ZMsg.recvMsg(worker);
-                    if ("start".equals(msg.getFirst().getString(ZMQ.CHARSET))) {
+                    if ("start".equals(msg.getFirst().getString(StandardCharsets.UTF_8))) {
                         // System.err.println("dealer (direct): start pushing");
                         for (int requests = 0; requests < SAMPLE_SIZE_PUB; requests++) {
                             worker.send(SUB_TOPIC, ZMQ.SNDMORE);
@@ -382,7 +389,7 @@ class RoundTripAndNotifyTests {
                     // receive messages
                     ZMsg.recvMsg(client).destroy(); });
 
-                subClient.subscribe(SUB_TOPIC.getBytes(ZMQ.CHARSET));
+                subClient.subscribe(SUB_TOPIC.getBytes(StandardCharsets.UTF_8));
                 // first loop to empty potential queues/HWM
                 for (int requests = 0; requests < SAMPLE_SIZE_PUB; requests++) {
                     ZMsg req = ZMsg.recvMsg(subClient);
@@ -393,7 +400,7 @@ class RoundTripAndNotifyTests {
                     ZMsg req = ZMsg.recvMsg(subClient);
                     req.destroy();
                 });
-                subClient.unsubscribe(SUB_TOPIC.getBytes(ZMQ.CHARSET));
+                subClient.unsubscribe(SUB_TOPIC.getBytes(StandardCharsets.UTF_8));
 
                 client.disconnect("tcp://localhost:5555");
                 client.setIdentity(SUBSCRIBER_ID);

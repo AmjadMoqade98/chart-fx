@@ -34,7 +34,7 @@ public class RestBehindRouterEvaluation {
                 @Override
                 public void run() {
                     Socket dealer = context.createSocket(SocketType.DEALER);
-                    dealer.setIdentity("dealer".getBytes(zmq.ZMQ.CHARSET));
+                    dealer.setIdentity("dealer".getBytes(StandardCharsets.UTF_8));
 
                     System.err.println("clients sends request");
                     dealer.connect("tcp://localhost:8080");
